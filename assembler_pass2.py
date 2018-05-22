@@ -49,27 +49,29 @@ should be stored at this location, rather than
 a DM2018S instruction.
 
 """
-from instr_format import Instruction, instruction_from_dict
-import memory
+from instr_format import instruction_from_dict
+
 import argparse
 
-from typing import Union, List
+from typing import List
 from enum import Enum, auto
 
 import sys
-import io
 import re
 import logging
+
 logging.basicConfig()
 log = logging.getLogger(__name__)
 log.setLevel(logging.INFO)
 
 # Configuration constants
-ERROR_LIMIT = 5    # Abandon assembly if we exceed this
+ERROR_LIMIT = 5  # Abandon assembly if we exceed this
+
 
 # Exceptions raised by this module
 class SyntaxError(Exception):
     pass
+
 
 ###
 # The whole instruction line is encoded as a single
@@ -86,9 +88,9 @@ class SyntaxError(Exception):
 
 # To simplify client code, we'd like to return a dict with
 # the right fields even if the line is syntactically incorrect. 
-DICT_NO_MATCH = { 'label': None, 'opcode': None, 'predicate': None,
-                      'target': None, 'src1': None, 'src2': None,
-                      'offset': None, 'comment': None }
+DICT_NO_MATCH = {'label': None, 'opcode': None, 'predicate': None,
+                 'target': None, 'src1': None, 'src2': None,
+                 'offset': None, 'comment': None}
 
 
 ###
@@ -154,7 +156,7 @@ ASM_FULL_PAT = re.compile(r"""
    """, re.VERBOSE)
 
 # Defaults for values that ASM_FULL_PAT makes optional
-INSTR_DEFAULTS = [ ('predicate', 'ALWAYS'), ('offset', '0') ]
+INSTR_DEFAULTS = [('predicate', 'ALWAYS'), ('offset', '0')]
 
 # A data word in memory; not a DM2018W instruction
 #
@@ -178,11 +180,11 @@ ASM_DATA_PAT = re.compile(r"""
    \s*$             
    """, re.VERBOSE)
 
-
 PATTERNS = [(ASM_FULL_PAT, AsmSrcKind.FULL),
             (ASM_DATA_PAT, AsmSrcKind.DATA),
             (ASM_COMMENT_PAT, AsmSrcKind.COMMENT)
             ]
+
 
 def parse_line(line: str) -> dict:
     """Parse one line of assembly code.
@@ -203,11 +205,13 @@ def parse_line(line: str) -> dict:
             return fields
     raise SyntaxError("Assembler syntax error in {}".format(line))
 
+
 def fill_defaults(fields: dict) -> None:
     """Fill in default values for optional fields of instruction"""
     for key, value in INSTR_DEFAULTS:
-        if fields[key] == None:
+        if fields[key] is None:
             fields[key] = value
+
 
 def value_parse(int_literal: str) -> int:
     """Parse an integer literal that could look like
@@ -227,11 +231,11 @@ def assemble(lines: List[str]) -> List[int]:
     assembly code. 
     """
     error_count = 0
-    instructions = [ ]
+    instructions = []
     for lnum in range(len(lines)):
         line = lines[lnum]
         log.debug("Processing line {}: {}".format(lnum, line))
-        try: 
+        try:
             fields = parse_line(line)
             if fields["kind"] == AsmSrcKind.FULL:
                 log.debug("Constructing instruction")
@@ -258,15 +262,16 @@ def assemble(lines: List[str]) -> List[int]:
             sys.exit(1)
     return instructions
 
+
 def cli() -> object:
     """Get arguments from command line"""
     parser = argparse.ArgumentParser(description="Duck Machine Assembler (pass 2)")
     parser.add_argument("sourcefile", type=argparse.FileType('r'),
-                            nargs="?", default=sys.stdin,
-                            help="Duck Machine assembly code file")
+                        nargs="?", default=sys.stdin,
+                        help="Duck Machine assembly code file")
     parser.add_argument("objfile", type=argparse.FileType('w'),
-                            nargs="?", default=sys.stdout, 
-                            help="Object file output")
+                        nargs="?", default=sys.stdout,
+                        help="Object file output")
     args = parser.parse_args()
     return args
 
@@ -279,12 +284,8 @@ def main():
     log.debug("Object code: \n{}".format(object_code))
     for word in object_code:
         log.debug("Instruction word {}".format(word))
-        print(word,file=args.objfile)
+        print(word, file=args.objfile)
+
 
 if __name__ == "__main__":
     main()
-
-
-    
-
-                  
