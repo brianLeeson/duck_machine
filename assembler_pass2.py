@@ -263,6 +263,7 @@ def assemble(lines: List[str]) -> List[int]:
     return instructions
 
 
+# TODO: Exact copy
 def cli() -> object:
     """Get arguments from command line"""
     parser = argparse.ArgumentParser(description="Duck Machine Assembler (pass 2)")
